@@ -1,0 +1,24 @@
+{
+  "name": "ynov-tp-arch",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "express": "express",
+    "monolith": "node monolith.js"
+  },
+  "dependencies": {
+    "ejs": "~2.6.1",
+    "express": "~4.16.1",
+    "mongodb": "^4.10.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "cz-conventional-changelog": "^3.3.0",
+    "express-generator": "^4.16.1"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
