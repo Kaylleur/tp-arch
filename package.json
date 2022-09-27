@@ -1,10 +1,11 @@
 {
   "name": "ynov-tp-arch",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "express": "express",
-    "monolith": "node monolith.js"
+    "monolith": "node monolith.js",
+    "release": "standard-version"
   },
   "dependencies": {
     "ejs": "~2.6.1",
@@ -14,7 +15,8 @@
   },
   "devDependencies": {
     "cz-conventional-changelog": "^3.3.0",
-    "express-generator": "^4.16.1"
+    "express-generator": "^4.16.1",
+    "standard-version": "^9.5.0"
   },
   "config": {
     "commitizen": {
