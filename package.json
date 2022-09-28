@@ -12,7 +12,8 @@
     "ejs": "~2.6.1",
     "express": "~4.16.1",
     "mongodb": "^4.10.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "swagger-jsdoc": "^6.2.5"
   },
   "devDependencies": {
     "cz-conventional-changelog": "^3.3.0",

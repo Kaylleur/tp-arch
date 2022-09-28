@@ -3,28 +3,45 @@ const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const users = require('./users.json');
+const packageJson = require('../package.json');
 const app = express();
 const port = 3001;
+const swaggerJsdoc = require('swagger-jsdoc');
 
+const options = {
+  failOnErrors: true,
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Monolith',
+      version: packageJson.version,
+    },
+    host: 'localhost:3000',
+    basePath: '/'
+  },
+  apis: ['./*.js'],
+};
+
+const openapiSpecification = swaggerJsdoc(options);
 
 // const url = 'mongodb://localhost:27017';
 // const client = new MongoClient(url, { useUnifiedTopology: true, writeConcern: 1 });
 // const dbName = 'tp1';
 
 async function main() {
-  const reqBySessions = [];
   // Use connect method to connect to the server
   // await client.connect();
   // console.log('Connected successfully to server');
   // const db = client.db(dbName);
   // const collection = db.collection('documents');
-
   // the following code examples can be pasted here...
 
   app.set('views', './views');
+
   app.set('view engine', 'ejs');
   app.use(morgan('dev'));
   app.use(cookieParser());
+  const reqBySessions = [];
 
   app.use((req, res, next) => {
     const now = new Date();
@@ -36,8 +53,10 @@ async function main() {
       reqBySessions.push(session);
     }
     session.reqs.push({req: req.path, date: now});
+    //remove too old session
     session.reqs = session.reqs.filter(r => now.getTime() - r.date.getTime() < 5000);
 
+    // req/s
     const reqsOnSameUrl = session.reqs.filter(r => r.req === req.path && now.getTime() - r.date.getTime() < 1000);
 
     console.log(reqsOnSameUrl.length + 'req/s');
@@ -57,7 +76,52 @@ async function main() {
     res.render('index', { title: 'Hello' });
   });
 
+  app.get('/swagger.json', function(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Content-Type', 'application/json');
+    res.send(openapiSpecification);
+  });
+
+  /**
+   * @openapi
+   * /users:
+   *   get:
+   *     description: Returns users
+   *     parameters:
+   *       - name: limit
+   *         in: query
+   *         description: size of array
+   *         schema:
+   *           type: integer
+   *       - name: skip
+   *         in: query
+   *         description: skip the N first
+   *         schema:
+   *           type: integer
+   *     tags:
+   *      - Users
+   *     responses:
+   *       200:
+   *         description: users
+   *         content:
+   *           application/json:
+   *               schema:
+   *                 type: array
+   *                 items:
+   *                   type: object
+   *                   required:
+   *                     - name
+   *                   properties:
+   *                     name:
+   *                       type: string
+   *                     password:
+   *                       type: string
+   *                     id:
+   *                       type: integer
+   *
+   */
   app.get('/users', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
     let limit = +req.query.limit || 20;
     limit = limit > 1000 ? 20 : limit;
     const skip = +req.query.skip || 0;
