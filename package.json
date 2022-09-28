@@ -8,6 +8,7 @@
     "release": "standard-version"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.6",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
     "mongodb": "^4.10.0",
