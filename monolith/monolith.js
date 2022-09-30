@@ -3,26 +3,9 @@ const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const users = require('./users.json');
-const packageJson = require('../package.json');
+const openApiSpecification = require('./swagger.json');
 const app = express();
 const port = 3001;
-const swaggerJsdoc = require('swagger-jsdoc');
-
-const options = {
-  failOnErrors: true,
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Monolith',
-      version: packageJson.version,
-    },
-    host: 'localhost:3000',
-    basePath: '/'
-  },
-  apis: ['./*.js'],
-};
-
-const openapiSpecification = swaggerJsdoc(options);
 
 // const url = 'mongodb://localhost:27017';
 // const client = new MongoClient(url, { useUnifiedTopology: true, writeConcern: 1 });
@@ -59,7 +42,7 @@ async function main() {
     // req/s
     const reqsOnSameUrl = session.reqs.filter(r => r.req === req.path && now.getTime() - r.date.getTime() < 1000);
 
-    console.log(reqsOnSameUrl.length + 'req/s');
+    console.log(reqsOnSameUrl.length + ' req/s');
     if(reqsOnSameUrl.length > 20 ){
       console.warn('rate limit');
       res.status(429).send({msg: 'rate limit', status: 429});
@@ -76,48 +59,38 @@ async function main() {
     res.render('index', { title: 'Hello' });
   });
 
-  app.get('/swagger.json', function(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Content-Type', 'application/json');
-    res.send(openapiSpecification);
-  });
-
   /**
+   *
    * @openapi
    * /users:
    *   get:
-   *     description: Returns users
    *     parameters:
    *       - name: limit
    *         in: query
-   *         description: size of array
    *         schema:
    *           type: integer
    *       - name: skip
    *         in: query
-   *         description: skip the N first
    *         schema:
    *           type: integer
-   *     tags:
-   *      - Users
    *     responses:
    *       200:
    *         description: users
    *         content:
-   *           application/json:
+   *           application/json;charset=utf-8:
    *               schema:
    *                 type: array
    *                 items:
    *                   type: object
-   *                   required:
-   *                     - name
    *                   properties:
+   *                     id:
+   *                       type: integer
    *                     name:
+   *                       type: string
+   *                     createdAt:
    *                       type: string
    *                     password:
    *                       type: string
-   *                     id:
-   *                       type: integer
    *
    */
   app.get('/users', (req, res) => {
@@ -126,6 +99,11 @@ async function main() {
     limit = limit > 1000 ? 20 : limit;
     const skip = +req.query.skip || 0;
     res.send(users.slice(skip, skip + limit));
+  });
+
+  app.get('/swagger.json', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.send(openApiSpecification);
   });
 
   app.listen(port, () => {
