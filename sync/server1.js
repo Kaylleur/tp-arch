@@ -8,15 +8,14 @@ server.on('connection', conn => {
 
   conn.on('data', (d) => {
     console.log('connection data from %s: %j', remoteAddress, d);
-    conn.write(d);
   });
 
   conn.once('close', () => {
     console.log('connection from %s closed', remoteAddress);
   });
-  conn.on('error', (err) => {
-    console.log('Connection %s error: %s', remoteAddress, err.message);
-  });
+  // conn.on('error', (err) => {
+  //   console.log('Connection %s error: %s', remoteAddress, err.message);
+  // });
 
 });
 

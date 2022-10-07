@@ -1,0 +1,20 @@
+<html>
+<head>
+
+</head>
+<body>
+List of users <span id="users"></span>
+</body>
+<script>
+  function reqListener () {
+    const data = JSON.parse(this.responseText);
+    const users = document.getElementById('users');
+    users.innerHTML = 'there is ' + data.length + ' users'
+  }
+
+  const req = new XMLHttpRequest();
+  req.addEventListener("load", reqListener);
+  req.open("GET", "http://localhost:3000/api/users");
+  req.send();
+</script>
+</html>

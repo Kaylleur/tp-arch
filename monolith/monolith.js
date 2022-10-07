@@ -62,7 +62,7 @@ async function main() {
   /**
    *
    * @openapi
-   * /users:
+   * /api/users:
    *   get:
    *     parameters:
    *       - name: limit
@@ -93,7 +93,7 @@ async function main() {
    *                       type: string
    *
    */
-  app.get('/users', (req, res) => {
+  app.get('/api/users', (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     let limit = +req.query.limit || 20;
     limit = limit > 1000 ? 20 : limit;
