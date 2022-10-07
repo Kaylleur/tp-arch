@@ -60,6 +60,13 @@
     </style>
 </head>
 <body>
+<div>
+    <form id="channelForm">
+        <input type="text" placeholder="Channel" id="channelInput"/>
+        <button>Set</button>
+    </form>
+    <span id="channelName"></span>
+</div>
 <ul id="messages"></ul>
 <form id="form" action="">
     <input id="input" autocomplete="off"/>
@@ -68,13 +75,13 @@
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  var socket = io();
+  const socket = io();
 
-  var form = document.getElementById('form');
-  var input = document.getElementById('input');
-  var messages = document.getElementById('messages');
+  const form = document.getElementById('form');
+  const input = document.getElementById('input');
+  const messages = document.getElementById('messages');
 
-  form.addEventListener('submit', function(e) {
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (input.value) {
       socket.emit('chat_message', input.value);
@@ -86,11 +93,25 @@
     newMsg(message);
   });
 
-  function newMsg(message){
-    var item = document.createElement('li');
+  function newMsg(message) {
+    const item = document.createElement('li');
     item.textContent = message;
     messages.appendChild(item);
     window.scrollTo(0, document.body.scrollHeight);
   }
+
+  const channelForm = document.getElementById('channelForm');
+  const channelInput = document.getElementById('channelInput');
+  const channelName = document.getElementById('channelName');
+
+  channelForm.addEventListener('submit', (e) => {
+    console.log('submit channel');
+    e.preventDefault();
+    if(channelInput.value){
+      socket.emit('set_channel', channelInput.value);
+      channelName.innerHTML = channelInput.value;
+      channelInput.value = '';
+    }
+  })
 </script>
 </html>

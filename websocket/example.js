@@ -4,7 +4,6 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
-const channels = {};
 
 
 app.get('/', (req, res) => {
@@ -13,20 +12,7 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
   socket.on('chat_message', (message) => {
-    const chan = channels[socket.id];
-    if(chan){
-      socket.to(chan).emit('new_message', message);
-    }
-  });
-  socket.on('set_channel', (channel) => {
-    const oldChan = channels[socket.id];
-    if(oldChan){
-      socket.leave(oldChan);
-    }
-    socket.join(channel);
-    channels[socket.id]= channel;
-
-    console.log(channels);
+    console.log('new msg', message);
   });
 });
 //https://socket.io/get-started/chat#getting-this-example

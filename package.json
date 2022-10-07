@@ -6,6 +6,7 @@
     "express": "express",
     "monolith": "node monolith.js",
     "release": "standard-version",
+    "ngrok": "ngrok http 3000",
     "mosquito": "docker run -d -p 1883:1883 -v ${PWD}/mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf --rm --name mqtt eclipse-mosquitto"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
     "mongodb": "^4.10.0",
     "morgan": "^1.10.0",
     "mqtt": "^4.3.7",
+    "ngrok": "^4.3.3",
     "socket.io": "^4.5.2",
     "swagger-jsdoc": "^6.2.5"
   },
