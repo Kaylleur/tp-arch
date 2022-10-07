@@ -8,3 +8,7 @@ app.post('/api/gitlab', (req, res) => {
   console.log(req.body);
   res.send('ok');
 });
+
+app.listen(3000, () => {
+  console.log('listenning on 3000');
+});
