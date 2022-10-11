@@ -7,7 +7,9 @@
     "monolith": "node monolith.js",
     "release": "standard-version",
     "ngrok": "ngrok http 3000",
-    "mosquito": "docker run -d -p 1883:1883 -v ${PWD}/mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf --rm --name mqtt eclipse-mosquitto"
+    "mosquito": "docker run -d -p 1883:1883 -v ${PWD}/mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf --rm --name mqtt eclipse-mosquitto",
+    "rabbitmq": "docker run -d --hostname rabbit --name rabbit -p 15672:15672 -p 5672:5672 --restart always rabbitmq:3-management",
+    "keycloak": ""
   },
   "dependencies": {
     "body-parser": "^1.20.1",

@@ -1,14 +1,24 @@
 const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
+const morgan = require('morgan');
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const channels = {};
 
+app.use(morgan('dev'))
+app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
   res.sendFile(process.cwd() + '/client.html');
+});
+
+app.post('/api/gitlab', (req, res) => {
+  console.log(req.body);
+  io.emit('gitlab_event', req.body);
+  res.status(204).send();
 });
 
 io.on('connection', (socket) => {
