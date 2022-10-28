@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const users = require('./users.json');
 const openApiSpecification = require('./swagger.json');
 const app = express();
-const port = 3001;
+const port = 3000;
 
 // const url = 'mongodb://localhost:27017';
 // const client = new MongoClient(url, { useUnifiedTopology: true, writeConcern: 1 });
@@ -77,7 +77,7 @@ async function main() {
    *       200:
    *         description: users
    *         content:
-   *           application/json;charset=utf-8:
+   *           application/json; charset=utf-8:
    *               schema:
    *                 type: array
    *                 items:
@@ -95,6 +95,7 @@ async function main() {
    */
   app.get('/api/users', (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Content-Type', 'application/json; charset=utf8');
     let limit = +req.query.limit || 20;
     limit = limit > 1000 ? 20 : limit;
     const skip = +req.query.skip || 0;

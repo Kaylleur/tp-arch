@@ -9,9 +9,10 @@
     "ngrok": "ngrok http 3000",
     "mosquito": "docker run -d -p 1883:1883 -v ${PWD}/mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf --rm --name mqtt eclipse-mosquitto",
     "rabbitmq": "docker run -d --hostname rabbit --name rabbit -p 15672:15672 -p 5672:5672 --restart always rabbitmq:3-management",
-    "keycloak": ""
+    "keycloak": "docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:19.0.3 start-dev"
   },
   "dependencies": {
+    "amqplib": "^0.10.3",
     "body-parser": "^1.20.1",
     "cookie-parser": "^1.4.6",
     "ejs": "~2.6.1",
@@ -20,6 +21,8 @@
     "morgan": "^1.10.0",
     "mqtt": "^4.3.7",
     "ngrok": "^4.3.3",
+    "passport": "^0.6.0",
+    "passport-saml": "^3.2.4",
     "socket.io": "^4.5.2",
     "swagger-jsdoc": "^6.2.5"
   },

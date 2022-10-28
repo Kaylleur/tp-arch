@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<style>
+    .login {
+        width: 300px;
+        margin: 0 auto;
+        margin-top: 100px;
+    }
+
+    .row {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .col {
+        flex: 1;
+        margin-right: 20px;
+    }
+
+    .col:last-child {
+        margin-right: 0;
+    }
+
+</style>
+<body>
+<div class="login">
+    <h2>Login</h2>
+    <form id="form">
+        <input type="text" name="username" placeholder="username">
+        <input type="password" name="password" placeholder="password">
+        <input type="submit" value="Login">
+    </form>
+    <span id="login-error"></span>
+</div>
+<div class="row" style="margin-top: 20px">
+    <span id="error"></span>
+    <div class="col">
+        <button id="users">Users</button>
+    </div>
+    <div class="col">
+        <button id="admin">Admin</button>
+    </div>
+    <div class="col">
+        <button id="both">Both</button>
+    </div>
+</div>
+</body>
+<script>
+  const fetchRoute = async (route) => {
+    const res = await fetch(route, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    const body = await res.json();
+    if (res.status === 200) {
+      document.getElementById('error').innerText = body.message;
+    } else {
+      document.getElementById('error').innerText = body.message;
+    }
+  };
+  document.getElementById('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementsByName('username')[0].value;
+    const password = document.getElementsByName('password')[0].value;
+    const res = await fetch('http://localhost:3000/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      body: JSON.stringify({
+        username,
+        password
+      })
+    });
+    const body = await res.json();
+    if (res.status >= 200 && res.status < 300) {
+      document.getElementById('login-error').innerText = `Your roles are: ${body.resource_access['cours'].roles.join(', ')}`;
+    } else {
+      document.getElementById('login-error').innerText = body.body.message;
+    }
+  });
+
+  document.getElementById('users').addEventListener('click', () => fetchRoute('/api/users'));
+
+  document.getElementById('admin').addEventListener('click', () => fetchRoute('/api/admin'));
+
+  document.getElementById('both').addEventListener('click', () => fetchRoute('/api/both'));
+
+
+</script>
+</html>

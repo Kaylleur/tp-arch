@@ -14,7 +14,7 @@ function randomString(length, chars){
 const users = [];
 
 
-for (let i = 0; i < 100000; i++) {
+for (let i = 0; i < 10000; i++) {
   users.push({
     id: i,
     name: randomString(10, 'abcdefghijklmnopqrstuvwxyz-'),
