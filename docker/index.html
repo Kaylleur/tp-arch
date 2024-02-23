@@ -1,0 +1,25 @@
+<!-- Generate an index html which try to fetch on /api/data -->
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>My docker</title>
+</head>
+<body>
+<span>Data result: </span>
+<span id="data">No data</span>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $.ajax({
+            url: "/api/data",
+            type: "GET",
+            success: function(data){
+                $("#data").html(data);
+            }
+        });
+    });
+</script>
+</body>
+</html>

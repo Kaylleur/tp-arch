@@ -12,7 +12,8 @@ amqp.connect('amqp://user:password@localhost', function(error0, connection) {
     const queue = 'thomasb'
     const exchange = 'events-discord';
 
-    channel.assertExchange(exchange, 'fanout', '');
+    channel.assertExchange(exchange, 'direct', '');
+    console.log('Exchange asserted %s', exchange);
 
     let i = 0;
     setInterval( () => {
@@ -20,7 +21,7 @@ amqp.connect('amqp://user:password@localhost', function(error0, connection) {
       // channel.sendToQueue(queue,Buffer.from(JSON.stringify({i})));
       channel.publish(exchange, '',Buffer.from(JSON.stringify({i})));
       console.log(" [x] Sent %s", i);
-    }, 1000);
+    }, 100);
 
   });
 });

@@ -4,7 +4,7 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
-const channels = {};
+const sockets = {};
 
 app.get('/', (req, res) => {
   res.sendFile(process.cwd() + '/example.html');
@@ -12,23 +12,21 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
   console.log('new connection: ' + socket.id);
-  // socket.join('toto');
-  // socket.to('toto').emit('new_message', 'hello');
-  socket.on('chat_message', data => {
-    console.log(data);
-    const channel = channels[socket.id];
-    console.log(channel);
-    console.log('new msg', data.message);
-    socket.to(channel).emit('new_message', data.message);
-  });
 
-  socket.on('join_channel', (channel) => {
-    channels[socket.id] = channel;
-    console.log(channels);
-    console.log('join channel', channel);
+  socket.on('join_channel', channel => {
+    console.log(channel);
+    sockets[socket.id] = {
+      channel
+    };
     socket.join(channel);
   });
 
+  socket.on('chat_message', message => {
+    console.log(message);
+    const channel = sockets[socket.id].channel;
+    socket.to(channel).emit('new_message', message);
+  });
+  // io.to(currentChannel).emit('new_message', 'new user connected');
 });
 //https://socket.io/get-started/chat#getting-this-example
 

@@ -7,7 +7,7 @@ const port = 3000;
 const realm = 'ynov';
 const keycloakUrl = `http://localhost:8081/realms/${realm}/protocol/openid-connect`;
 const clientId = 'cours';
-const clientSecret = 'BYt8TZSyGppvvWNtJFdw4rHDCVGkBLv0';
+const clientSecret = '7hgsdoP5opIQQ5S8b9JQ9okV14bMAY3V';
 
 app.use(bodyParser.json());
 app.use(morgan('dev'));

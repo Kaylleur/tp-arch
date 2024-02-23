@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO chat</title>
+    <style>
+        .row {
+            display: block;
+            /*padding: 10px;*/
+            width: 100%;
+        }
+
+        body {
+            margin: 0;
+            padding-bottom: 3rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        #channelForm {
+            background-color: #eee;
+        }
+
+        #channelForm > button {
+            background-color: #ccc;
+            border: none;
+            padding: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .sidebar {
+            position: fixed;
+            margin: 0;
+            width: 17%;
+            height: 100vh;
+            border-right: 1px solid #ccc;
+        }
+
+        .main-container {
+            padding-top: 3rem;
+            width: 83%;
+            height: 100vh;
+            margin-left: 17%;
+        }
+
+        .messages-container {
+            position: fixed;
+            top: 0;
+            width: 83%;
+            /*overflow-y: hidden;*/
+        }
+
+        .form-container {
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 83%;
+            height: 10vh;
+            background: rgba(0, 0, 0, 0.15);
+            box-sizing: border-box;
+            padding: 0.25rem;
+            backdrop-filter: blur(10px);
+        }
+
+        #form {
+            height: 100%;
+            width: 100%;
+        }
+
+        input {
+            border: none;
+            padding: 0 1rem;
+            flex-grow: 1;
+            border-radius: 2rem;
+            margin: 0.25rem;
+            width: 80%;
+            height: 60%;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        #form > button {
+            background: #333;
+            width: 5%;
+            height: 70%;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #messages > li {
+            padding: 0.5rem 1rem;
+        }
+
+        #messages > li:nth-child(odd) {
+            background: #efefef;
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="row">
+        <h1 id="username"></h1>
+        <br/>
+        <h2 id="roles"></h2>
+        <br/>
+        <h2 id="channel"></h2>
+    </div>
+    <div class="row">
+        <form id="channelForm">
+            <input type="text" placeholder="Channel" id="channelInput"/>
+            <button>Set</button>
+        </form>
+    </div>
+    <div class="row">
+        Send to :
+        <select id="sendToOptions">
+            <option value="channel">Current channel</option>
+        </select>
+    </div>
+    <div class="row">
+        Connected Users:
+        <br/>
+        <ul id="connectedUsers"></ul>
+    </div>
+</div>
+<div class="main-container">
+    <div class="messages-container">
+        <ul id="messages"></ul>
+    </div>
+    <div class="form-container">
+        <span id="typing"></span>
+        <form id="form">
+            <input id="input" autocomplete="off" placeholder="Message"/>
+            <button id="send">Send</button>
+        </form>
+    </div>
+</div>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const form = document.getElementById('form');
+  const input = document.getElementById('input');
+  const roles = document.getElementById('roles');
+  const messages = document.getElementById('messages');
+  const channelForm = document.getElementById('channelForm');
+  const channelInput = document.getElementById('channelInput');
+  const channel = document.getElementById('channel');
+  const typing = document.getElementById('typing');
+  const sendToOptions = document.getElementById('sendToOptions');
+  let clientId, realm, keycloakUrl;
+  let redirectUri = 'http://localhost:3000/callback&response_type=code&scope=openid';
+  let username;
+
+  const typingTimeout = 2000;
+  //store who is typing and with interval remove old typing
+  const typingUsers = {};
+  const removeTyping = (username) => {
+    delete typingUsers[username];
+    const typingUsersArray = Object.keys(typingUsers);
+    if (typingUsersArray.length > 0) {
+      typing.innerHTML = `${typingUsersArray.join(', ')} is typing...`;
+    } else {
+      typing.innerHTML = '';
+    }
+  };
+  const addTyping = (username) => {
+    if (typingUsers[username]) {
+      console.log('clearing timeout' + typingUsers[username]);
+      clearTimeout(typingUsers[username]);
+    }
+    const typingUsersArray = Object.keys(typingUsers);
+    if (typingUsersArray.length > 0) {
+      typing.innerHTML = `${typingUsersArray.join(', ')} is typing...`;
+    } else {
+      typing.innerHTML = '';
+    }
+    typingUsers[username] = setTimeout(() => removeTyping(username), typingTimeout);
+  };
+
+  const socket = io();
+
+  socket.on('configuration', (config) => {
+    keycloakUrl = config.keycloakUrl;
+    realm = config.realm;
+    clientId = config.clientId;
+  });
+
+  const getParsedCookies = () => document.cookie.split(';').map(cookie => cookie.split('=')).reduce((acc, [key, value]) => ({
+    ...acc,
+    [key.trim()]: decodeURIComponent(value)
+  }), {});
+
+  //only for dev
+  socket.on('disconnect', (e) => {
+    console.log('disconnected', e);
+    location.reload();
+  });
+
+  const redirectToKeycloak = () => {
+    console.log('redirecto to keycloak');
+    location.href = keycloakUrl + '/realms/' + realm + '/protocol/openid-connect/auth?client_id=' + clientId + '&redirect_uri=' + redirectUri;
+  };
+
+  const refreshAccessToken = async (refreshToken) => {
+    return await fetch('/api/refreshToken', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ refreshToken })
+    });
+  };
+
+  setTimeout(async () => {
+    // init
+    const cookies = getParsedCookies();
+    let { access_token, refresh_token } = cookies;
+
+    if (!access_token) {
+      // no access token
+      if (refresh_token) {
+        const response = await refreshAccessToken(refresh_token);
+        if (response.status <= 400) {
+          location.reload();
+        }
+      }
+      // bad refresh token
+      redirectToKeycloak();
+    }
+    const res = await fetch('/api/me', {
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      }
+    });
+    if (res.status >= 400) {
+      // expired access token
+      if (refresh_token) {
+        const response = await refreshAccessToken(refresh_token);
+        if (response.status <= 400) {
+          location.reload();
+        }
+      }// bad refresh token
+      redirectToKeycloak();
+    }
+    // all is good :)
+    const data = await res.json();
+    // console.log(data);
+    username = data.preferred_username;
+    roles.innerText = data.resource_access.cours.roles.join(',');
+    socket.emit('join_channels', data.resource_access.cours.roles);
+
+    document.getElementById('username').innerText = username;
+    const channel = 'general';
+    socket.emit('join', { username, channel });
+    this.channel.innerText = channel;
+  }, 500);
+
+  socket.on('gitlab_event', (data) => {
+    alert('On event on gitlab has been received');
+  });
+
+  input.addEventListener('keydown', () => {
+    if (input.value.length > 0) {
+      console.log('Emitting typing');
+      socket.emit('im_typing', { username: document.getElementById('username').innerText, channel: channel.innerText });
+    }
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (input.value) {
+      const sendTo = sendToOptions.value;
+      socket.emit('chat_message', { to: sendTo, message: input.value });
+      newMsg({ username: 'You', message: input.value });
+      input.value = '';
+    }
+  });
+  socket.on('new_message', (message) => {
+    newMsg(message);
+  });
+
+  socket.on('is_typing', ({ usernames }) => {
+    console.log('receiving typing', usernames);
+    usernames.forEach((username) => addTyping(username));
+  });
+
+
+  socket.on('users', (users) => {
+    const connectedUsers = document.getElementById('connectedUsers');
+    connectedUsers.innerHTML = '';
+    sendToOptions.innerHTML = '';
+    sendToOptions.innerHTML = `<option value="channel">Current channel</option>`;
+    users.forEach((user) => {
+      const li = document.createElement('li');
+      li.innerText = user;
+      connectedUsers.appendChild(li);
+      // add option for each connected users to select sendToOptions
+      if (user !== username) {
+        const option = document.createElement('option');
+        option.value = user;
+        option.innerText = user;
+        sendToOptions.appendChild(option);
+      }
+    });
+  });
+
+  const newMsg = ({ username, message, private }) => {
+    const item = document.createElement('li');
+    item.textContent = private ? `${username} (private): ${message}` : `${username}: ${message}`;
+    messages.appendChild(item);
+    const msgContainer = document.getElementById('messages');
+    window.scrollTo(0, msgContainer.scrollHeight);
+  };
+  channelForm.addEventListener('submit', (e) => {
+    console.log('submit channel');
+    e.preventDefault();
+    if (channelInput.value) {
+      socket.emit('join', { username, channel: channelInput.value });
+      this.channel.innerText = channelInput.value;
+      this.channelInput.value = '';
+    }
+  });
+</script>
+</html>

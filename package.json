@@ -20,6 +20,7 @@
     "mongodb": "^4.10.0",
     "morgan": "^1.10.0",
     "mqtt": "^4.3.7",
+    "neo4j-driver": "^5.2.0",
     "ngrok": "^4.3.3",
     "passport": "^0.6.0",
     "passport-saml": "^3.2.4",

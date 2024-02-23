@@ -1,0 +1,24 @@
+version: "3"
+
+services:
+  myapp:
+    build:
+      context: .
+    environment:
+      TITLE: toto
+    ports:
+      - 3002:3000
+  myapp2:
+    build:
+      context: .
+    environment:
+      TITLE: tata
+    ports:
+      - 3003:3000
+  nginx:
+    image: nginx:latest
+    ports:
+      - 8888:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+

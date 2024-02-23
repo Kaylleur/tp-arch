@@ -60,12 +60,8 @@
     </style>
 </head>
 <body>
-<h1 id="channelName">No chan</h1>
+<h1 id="channel"></h1>
 <ul id="messages"></ul>
-<form id="channel" action="">
-    <input id="input_channel" autocomplete="off" placeholder="Set a channel"/>
-    <button>Join</button>
-</form>
 <form id="form" action="">
     <input id="input" autocomplete="off"/>
     <button>Send</button>
@@ -75,29 +71,21 @@
 <script>
   var socket = io();
 
+  const channel = prompt('Choisissez votre canal ? ');
+  socket.emit('join_channel', channel);
+  document.getElementById('channel').innerHTML = channel;
+
+
   socket.on('new_message', (message) => {
     document.getElementById('messages').innerHTML += `<li>${message}</li>`;
   });
 
   document.getElementById('form').addEventListener('submit', function (e) {
     e.preventDefault(); // prevents page reloading
-    if(!document.getElementById('input_channel').value){
-      return; // prevent empty channel
-    }
+    console.log('submit');
     const input = document.getElementById('input');
-    socket.emit('chat_message',
-      {
-        message: input.value,
-        channel: document.getElementById('input_channel').value
-      });
+    socket.emit('chat_message',input.value);
     document.getElementById('messages').innerHTML += `<li>${input.value}</li>`;
-  });
-
-  document.getElementById('channel').addEventListener('submit', function (e) {
-    e.preventDefault(); // prevents page reloading
-    const input = document.getElementById('input_channel');
-    socket.emit('join_channel', input.value);
-    document.getElementById('channelName').innerHTML = input.value;
   });
 
 </script>
