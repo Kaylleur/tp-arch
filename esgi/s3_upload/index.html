@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload et téléchargement de fichier vers S3</title>
+</head>
+<body>
+<h1>Uploader un fichier vers S3</h1>
+<form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="file" id="fileInput" />
+    <button type="button" onclick="uploadFile()">Uploader</button>
+</form>
+
+<h2>Télécharger un fichier depuis S3</h2>
+<input type="text" placeholder="nom du fichier" id="name" />
+<button type="button" onclick="downloadFile()">Télécharger le fichier</button>
+
+<script>
+    function uploadFile() {
+        const form = document.getElementById('uploadForm');
+        const formData = new FormData(form);
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+            });
+    }
+
+    function downloadFile() {
+        const name = document.getElementById('name').value;
+        fetch('/download/' + name)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur lors du téléchargement du fichier');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = document.getElementById('name').value // Nom du fichier à télécharger
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors du téléchargement du fichier');
+            });
+    }
+</script>
+</body>
+</html>

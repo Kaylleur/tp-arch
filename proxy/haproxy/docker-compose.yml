@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  haproxy:
+    image: haproxy:latest
+    ports:
+    - "80:80"
+    volumes:
+    - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+  web1:
+    image: nginx
+    container_name: web1
+    volumes:
+    - ../web1/index.html:/usr/share/nginx/html/index.html
+  web2:
+    image: nginx
+    container_name: web2
+    volumes:
+    - ../web2/index.html:/usr/share/nginx/html/index.html

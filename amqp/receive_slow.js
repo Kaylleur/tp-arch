@@ -3,7 +3,7 @@
 var amqp = require('amqplib/callback_api');
 let count = 0;
 
-amqp.connect('amqp://user:password@localhost', async (error0, connection) => {
+amqp.connect('amqp://guest:guest@localhost', async (error0, connection) => {
   if (error0) {
     throw error0;
   }

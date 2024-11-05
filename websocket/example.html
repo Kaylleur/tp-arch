@@ -71,8 +71,7 @@
 <script>
   var socket = io();
 
-  const channel = prompt('Choisissez votre canal ? ');
-  socket.emit('join_channel', channel);
+  socket.emit('join_channel', 'tata');
   document.getElementById('channel').innerHTML = channel;
 
 
@@ -84,7 +83,7 @@
     e.preventDefault(); // prevents page reloading
     console.log('submit');
     const input = document.getElementById('input');
-    socket.emit('chat_message',input.value);
+    socket.emit('chat_message', {msg: input.value, to: 'thomas'});
     document.getElementById('messages').innerHTML += `<li>${input.value}</li>`;
   });
 

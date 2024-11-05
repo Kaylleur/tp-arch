@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Messaging App</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+        }
+        #form-container {
+            width: 30%;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        #messages-container {
+            width: 70%;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fff;
+            border-left: 1px solid #ccc;
+        }
+        #messages {
+            list-style-type: none;
+            padding: 0;
+        }
+        #messages li {
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+        }
+        #message-form input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        #message-form input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #5cb85c;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        #message-form input[type="submit"]:hover {
+            background-color: #4cae4c;
+        }
+    </style>
+</head>
+<body>
+<div id="form-container">
+    <form id="message-form">
+        <input id="message-input" type="text" autocomplete="off" placeholder="Type your message here..." required />
+        <input type="submit" value="Send" />
+    </form>
+
+    <form id="launch-msg">
+        <input id="launch-input" type="text" autocomplete="off" placeholder="Type your message here..." required />
+        <input type="submit" value="Launch msg to rabbit" />
+    </form>
+</div>
+<div id="messages-container">
+    <ul id="messages"></ul>
+</div>
+
+<!-- Socket.IO client library -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    const form = document.getElementById('message-form');
+    const input = document.getElementById('message-input');
+    const messages = document.getElementById('messages');
+
+    // Emit un evenement pour prévenir les autres utilisateurs
+
+    // Une fois reçu j'affiche un message que quelqu'un s'est connecté
+
+    // Handle form submission
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (input.value) {
+            socket.emit('chat message', input.value);
+            const item = document.createElement('li');
+            item.textContent = input.value;
+            messages.appendChild(item);
+            messages.scrollTop = messages.scrollHeight;
+            input.value = '';
+        }
+    });
+
+    const launchForm = document.getElementById('launch-msg');
+    const launchInput = document.getElementById('launch-input');
+    // req post fetch on /messages/:message then alert body.message
+    launchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (launchInput.value) {
+            fetch('/messages/'+launchInput.value, {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                });
+        }
+    });
+
+    // Display incoming messages
+    socket.on('chat message', (msg) => {
+        const item = document.createElement('li');
+        item.textContent = msg;
+        messages.appendChild(item);
+        messages.scrollTop = messages.scrollHeight;
+    });
+
+    socket.on('launch message', (msg) => {
+        alert('Alert message received : '+msg);
+    });
+</script>
+</body>
+</html>

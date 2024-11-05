@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  traefik:
+    image: traefik:latest
+    command:
+    - "--api.insecure=true"
+    - "--providers.docker=true"
+    - "--entrypoints.web.address=:80"
+    ports:
+    - "80:80"
+    - "8080:8080" # Port pour le tableau de bord Traefik
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+
+  web1:
+    image: nginx
+    volumes:
+    - ../web1/index.html:/usr/share/nginx/html/index.html
+    labels:
+    - "traefik.http.routers.web1.rule=Host(`web1.localhost`)"
+    - "traefik.http.services.web1.loadbalancer.server.port=80"
+
+  web2:
+    image: nginx
+    volumes:
+    - ../web2/index.html:/usr/share/nginx/html/index.html
+    labels:
+    - "traefik.http.routers.web2.rule=Host(`web2.localhost`)"
+    - "traefik.http.services.web2.loadbalancer.server.port=80"

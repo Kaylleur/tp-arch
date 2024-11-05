@@ -47,7 +47,7 @@
             position: fixed;
             top: 0;
             width: 83%;
-            /*overflow-y: hidden;*/
+            overflow-y: hidden;
         }
 
         .form-container {
@@ -113,8 +113,6 @@
     <div class="row">
         <h1 id="username"></h1>
         <br/>
-        <h2 id="roles"></h2>
-        <br/>
         <h2 id="channel"></h2>
     </div>
     <div class="row">
@@ -152,7 +150,6 @@
 <script>
   const form = document.getElementById('form');
   const input = document.getElementById('input');
-  const roles = document.getElementById('roles');
   const messages = document.getElementById('messages');
   const channelForm = document.getElementById('channelForm');
   const channelInput = document.getElementById('channelInput');
@@ -187,81 +184,37 @@
     typingUsers[username] = setTimeout(() => removeTyping(username), typingTimeout);
   };
 
+  const getParsedCookies = () => document.cookie.split(';').map(cookie => cookie.split('=')).reduce((acc, [key, value]) => ({
+    ...acc,
+    [key.trim()]: decodeURIComponent(value)
+  }), {});
+
   const socket = io();
-  //
-  // const getParsedCookies = () => document.cookie.split(';').map(cookie => cookie.split('=')).reduce((acc, [key, value]) => ({
-  //   ...acc,
-  //   [key.trim()]: decodeURIComponent(value)
-  // }), {});
 
   //only for dev
   socket.on('disconnect', (e) => {
     console.log('disconnected', e);
-    // location.reload();
+    location.reload();
   });
 
-  // const redirectToKeycloak = () => {
-  //   console.log('redirecto to keycloak');
-  //   location.href = 'http://localhost:8081/realms/ynov/protocol/openid-connect/auth?client_id=cours&redirect_uri=http://localhost:3000/callback&response_type=code&scope=openid';
-  // };
-  //
-  // const refreshAccessToken = async (refreshToken) => {
-  //   return await fetch('/api/refreshToken', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json'
-  //     },
-  //     body: JSON.stringify({ refreshToken })
-  //   });
-  // };
+  setTimeout(() => {
+    // username = prompt('What is your username?');
+    const cookies = getParsedCookies();
+    if(!cookies.access_token){
+      window.location = 'http://localhost:8081/realms/ynov/protocol/openid-connect/auth?client_id=cours&redirect_uri=http://localhost:3000/callback&response_type=code&scope=openid';
+    }
 
-  setTimeout(async () => {
-    // // init
-    // const cookies = getParsedCookies();
-    // let { access_token, refresh_token } = cookies;
-    //
-    // if (!access_token) {
-    //   // no access token
-    //   if (refresh_token) {
-    //     const response = await refreshAccessToken(refresh_token);
-    //     if (response.status <= 400) {
-    //       location.reload();
-    //     }
-    //   }
-    //   // bad refresh token
-    //   redirectToKeycloak();
-    // }
-    // const res = await fetch('/api/me', {
-    //   headers: {
-    //     'Authorization': `Bearer ${access_token}`
-    //   }
-    // });
-    // if (res.status >= 400) {
-    //   // expired access token
-    //   if (refresh_token) {
-    //     const response = await refreshAccessToken(refresh_token);
-    //     if (response.status <= 400) {
-    //       location.reload();
-    //     }
-    //   }// bad refresh token
-    //   redirectToKeycloak();
-    // }
-    // // all is good :)
-    // const data = await res.json();
-    // console.log(data);
-    username = 'Toto';
-    roles.innerText = 'Admin'
-    socket.emit('join_channels', 'Admin');
-
+    const decodedJwt = JSON.parse(atob(cookies.access_token.split('.')[1]));
+    username = decodedJwt.preferred_username;
     document.getElementById('username').innerText = username;
     const channel = 'general';
     socket.emit('join', { username, channel });
     this.channel.innerText = channel;
-  }, 500);
+  }, 1000);
 
-  socket.on('gitlab_event', (data) => {
-    alert('On event on gitlab has been received');
-  });
+  // socket.on('gitlab_event', (data) => {
+  //   alert('On event on gitlab has been received');
+  // })
 
   input.addEventListener('keydown', () => {
     if (input.value.length > 0) {
@@ -299,7 +252,7 @@
       li.innerText = user;
       connectedUsers.appendChild(li);
       // add option for each connected users to select sendToOptions
-      if (user !== username) {
+      if(user !== username) {
         const option = document.createElement('option');
         option.value = user;
         option.innerText = user;
@@ -312,8 +265,7 @@
     const item = document.createElement('li');
     item.textContent = private ? `${username} (private): ${message}` : `${username}: ${message}`;
     messages.appendChild(item);
-    const msgContainer = document.getElementById('messages');
-    window.scrollTo(0, msgContainer.scrollHeight);
+    window.scrollTo(0, document.body.scrollHeight);
   };
   channelForm.addEventListener('submit', (e) => {
     console.log('submit channel');

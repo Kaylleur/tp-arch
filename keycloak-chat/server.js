@@ -1,53 +1,47 @@
 const express = require('express');
-const { createServer } = require('node:http');
-
-const { Server } = require('socket.io');
 const app = express();
-const server = createServer(app);
+const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require('socket.io');
 const io = new Server(server);
 const sockets = [];
 const typing = {};
-const realm = 'ynov';
-const clientId = 'cours';
-const clientSecret = '7hgsdoP5opIQQ5S8b9JQ9okV14bMAY3V';
-//
-// app.use(cookieParser());
-// app.use(morgan('dev'));
-// app.use(bodyParser.json());
-//
-// const checkAuth = async (req, res, next) => {
-//   const response = await fetch(`http://localhost:8081/realms/${realm}/protocol/openid-connect/userinfo`, {
-//     method: 'GET',
-//     headers: {
-//       'Authorization': `Bearer ${req.headers.authorization}`
-//     }
-//   });
-//   if (response.status >= 400) {
-//     res.status(401).send('Unauthorized');
-//     return;
-//   }
-//   next();
-// };
+
+app.use(morgan('dev'));
+app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-  console.log('sendfile');
-  return res.sendFile(__dirname + '/client.html');
-});
-server.listen(3000, () => {
-  console.log('listening on *:3000');
+  res.sendFile(process.cwd() + '/client.html');
 });
 
+app.get('/callback',async (req, res) => {
+  console.log(req.query);
+  const code = req.query.code;
+  const response = await fetch(`http://localhost:8081/realms/ynov/protocol/openid-connect/token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'client_id=cours&client_secret=7hgsdoP5opIQQ5S8b9JQ9okV14bMAY3V&grant_type=authorization_code&code=' + code + '&redirect_uri=http://localhost:3000/callback'
+  });
+  const body = await response.json();
+  res.cookie('access_token', body.access_token);
+  res.cookie('refresh_token', body.refresh_token);
+  res.redirect('/');
+});
+
+// app.post('/api/gitlab', (req, res) => {
+//   console.log(req.body);
+//   io.emit('gitlab_event', req.body);
+//   res.status(204).send();
+// });
 
 io.on('connection', (socket) => {
+
   io.to(socket.id).emit('users', sockets.map(s => s.username));
 
-
-  io.on('join_channels', (channels) => {
-    console.log('join_channels', channels);
-    channels.forEach(channel => {
-      socket.join(channel);
-    });
-  });
   //typing
   socket.on('im_typing', () => {
     const { channel, username } = sockets.find(s => s.socket === socket.id);
@@ -101,12 +95,16 @@ io.on('connection', (socket) => {
     const userInfo = sockets.find(s => s.socket === socket.id);
     if (userInfo) {
       let channel = userInfo.channel;
-      if (to !== 'channel') {
+      if(to !== 'channel'){
         const toInfo = sockets.find(s => s.username === to);
         channel = toInfo.socket; // send to private socket
       }
-      socket.to(channel).emit('new_message', { username: userInfo.username, private: to !== 'channel', message });
+      socket.to(channel).emit('new_message', { username: userInfo.username, private: to !== 'channel',message });
     }
   });
 });
 //https://socket.io/get-started/chat#getting-this-example
+
+server.listen(3000, () => {
+  console.log('listening on *:3000');
+});
