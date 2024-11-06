@@ -1,0 +1,17 @@
+# docker-compose.yml
+version: "3"
+services:
+  app:
+    image: nginx:latest
+    networks:
+    - frontend
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+    networks:
+    - backend
+
+networks:
+  frontend:
+  backend:

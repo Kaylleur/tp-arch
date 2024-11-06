@@ -1,0 +1,9 @@
+# docker-compose.yml
+version: "3"
+services:
+  web:
+    image: nginx:latest
+    environment:
+    - NGINX_HOST=${NGINX_HOST}
+    ports:
+    - "${PORT}:80"

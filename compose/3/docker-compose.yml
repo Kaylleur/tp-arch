@@ -1,0 +1,13 @@
+# docker-compose.yml
+version: "3"
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: exampledb
+    volumes:
+    - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
