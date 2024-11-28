@@ -1,0 +1,3 @@
+FROM debian:bullseye-slim
+WORKDIR /opt/app
+CMD pwd
